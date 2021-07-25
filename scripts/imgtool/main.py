@@ -77,6 +77,8 @@ def load_key(keyfile):
     passwd = getpass.getpass("Enter key passphrase: ").encode('utf-8')
     return keys.load(keyfile, passwd)
 
+def load_pkcs11(url, key):
+    return keys.PKCS11(url, key)
 
 def get_password():
     while True:
@@ -290,10 +292,11 @@ class BasedIntParamType(click.ParamType):
               default='hash', help='In what format to add the public key to '
               'the image manifest: full key or hash of the key.')
 @click.option('-k', '--key', metavar='filename')
+@click.option('--pkcs11', metavar='pkcs11-url')
 @click.command(help='''Create a signed or unsigned image\n
                INFILE and OUTFILE are parsed as Intel HEX if the params have
                .hex extension, otherwise binary format is used''')
-def sign(key, public_key_format, align, version, pad_sig, header_size,
+def sign(key, pkcs11, public_key_format, align, version, pad_sig, header_size,
          pad_header, slot_size, pad, confirm, max_sectors, overwrite_only,
          endian, encrypt, infile, outfile, dependencies, load_addr, hex_addr,
          erased_val, save_enctlv, security_counter, boot_record, custom_tlv,
@@ -311,7 +314,13 @@ def sign(key, public_key_format, align, version, pad_sig, header_size,
                       erased_val=erased_val, save_enctlv=save_enctlv,
                       security_counter=security_counter)
     img.load(infile)
-    key = load_key(key) if key else None
+    if key:
+        key = load_key(key)
+    if pkcs11:
+        key = load_pkcs11(pkcs11, key)
+    else:
+        key = None
+
     enckey = load_key(encrypt) if encrypt else None
     if enckey and key:
         if ((isinstance(key, keys.ECDSA256P1) and

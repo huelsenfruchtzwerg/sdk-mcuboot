@@ -33,7 +33,7 @@ from .rsa import RSA, RSAPublic, RSAUsageError, RSA_KEY_SIZES
 from .ecdsa import ECDSA256P1, ECDSA256P1Public, ECDSAUsageError
 from .ed25519 import Ed25519, Ed25519Public, Ed25519UsageError
 from .x25519 import X25519, X25519Public, X25519UsageError
-
+from .pkcs11 import PKCS11
 
 class PasswordRequired(Exception):
     """Raised to indicate that the key is password protected, but a
